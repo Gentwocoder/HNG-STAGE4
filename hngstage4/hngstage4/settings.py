@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'drf_spectacular',
     
     # Local apps
     'core',
@@ -186,9 +187,29 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'User Service API',
-    'DESCRIPTION': 'API documentation for the User Service',
+    'DESCRIPTION': 'Microservice for user management, authentication, and notification preferences in a distributed notification system',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/v1',
+    'SERVERS': [
+        {'url': 'http://localhost:8000', 'description': 'Development server'},
+        {'url': 'http://127.0.0.1:8000', 'description': 'Local server'},
+    ],
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'User authentication endpoints'},
+        {'name': 'Users', 'description': 'User profile management'},
+        {'name': 'Preferences', 'description': 'Notification preferences'},
+        {'name': 'Push Tokens', 'description': 'Push notification tokens'},
+        {'name': 'Health', 'description': 'Service health monitoring'},
+    ],
+    'CONTACT': {
+        'name': 'HNG Stage 4 Backend Team',
+        'email': 'support@example.com',
+    },
+    'LICENSE': {
+        'name': 'HNG Stage 4 Backend Task',
+    },
 }
 
 # Redis Cache Configuration

@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from drf_spectacular.utils import extend_schema
 
 from .models import User, UserProfile, NotificationPreference, PushToken
 from .serializers import (
@@ -82,7 +83,14 @@ class UserRegistrationView(APIView):
     POST /api/v1/users/register/
     """
     permission_classes = [AllowAny]
+    serializer_class = UserRegistrationSerializer
     
+    @extend_schema(
+        request=UserRegistrationSerializer,
+        responses={201: UserSerializer},
+        tags=['Authentication'],
+        description='Register a new user account'
+    )
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         
@@ -123,7 +131,14 @@ class UserLoginView(APIView):
     POST /api/v1/users/login/
     """
     permission_classes = [AllowAny]
+    serializer_class = UserLoginSerializer
     
+    @extend_schema(
+        request=UserLoginSerializer,
+        responses={200: UserSerializer},
+        tags=['Authentication'],
+        description='Authenticate user and return JWT tokens'
+    )
     def post(self, request):
         serializer = UserLoginSerializer(
             data=request.data,
