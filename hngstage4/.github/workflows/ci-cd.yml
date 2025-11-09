@@ -1,0 +1,219 @@
+name: User Service CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run linting with flake8
+        run: |
+          flake8 core/ hngstage4/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 core/ hngstage4/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: Run black code formatter check
+        run: |
+          black --check core/ hngstage4/
+      
+      - name: Run isort import checker
+        run: |
+          isort --check-only core/ hngstage4/
+      
+      - name: Run migrations
+        env:
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: False
+          USE_POSTGRES: True
+          DB_NAME: test_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          USE_REDIS: True
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd hngstage4
+          python manage.py migrate
+      
+      - name: Run tests with coverage
+        env:
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: False
+          USE_POSTGRES: True
+          DB_NAME: test_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          USE_REDIS: True
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd hngstage4
+          pytest --cov=core --cov-report=xml --cov-report=html
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./hngstage4/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+      
+      - name: Lint with flake8
+        run: |
+          flake8 hngstage4/core/ hngstage4/hngstage4/ --count --show-source --statistics
+      
+      - name: Check formatting with black
+        run: |
+          black --check hngstage4/core/ hngstage4/hngstage4/
+      
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only hngstage4/core/ hngstage4/hngstage4/
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install safety
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety
+      
+      - name: Check for security vulnerabilities
+        run: |
+          safety check --file requirements.txt || true
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./hngstage4
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/user-service:latest
+            ${{ secrets.DOCKER_USERNAME }}/user-service:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/user-service:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/user-service:buildcache,mode=max
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd /app/user-service
+            docker-compose pull
+            docker-compose up -d
+            docker-compose exec -T web python manage.py migrate
+            docker-compose exec -T web python manage.py collectstatic --noinput
+      
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f ${{ secrets.SERVER_URL }}/api/v1/users/health/ || exit 1
