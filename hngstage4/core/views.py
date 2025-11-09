@@ -225,6 +225,7 @@ class UserProfileView(APIView):
     PUT /api/v1/users/profile/ - Update current user profile
     """
     permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
     
     def get(self, request):
         """Get current user profile"""
