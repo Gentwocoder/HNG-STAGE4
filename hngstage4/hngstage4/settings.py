@@ -203,10 +203,6 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Push Tokens', 'description': 'Push notification tokens'},
         {'name': 'Health', 'description': 'Service health monitoring'},
     ],
-    'CONTACT': {
-        'name': 'HNG Stage 4 Backend Team',
-        'email': 'support@example.com',
-    },
     'LICENSE': {
         'name': 'HNG Stage 4 Backend Task',
     },

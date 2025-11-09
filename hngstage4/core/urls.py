@@ -6,7 +6,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
-    health_check,
+    # health_check,
     UserRegistrationView,
     UserLoginView,
     UserLogoutView,
@@ -24,7 +24,7 @@ app_name = 'core'
 
 urlpatterns = [
     # Health check
-    path('health/', health_check, name='health-check'),
+    # path('health/', health_check, name='health-check'),
     
     # Authentication endpoints
     path('register/', UserRegistrationView.as_view(), name='register'),
