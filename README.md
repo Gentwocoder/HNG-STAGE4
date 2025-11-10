@@ -109,7 +109,7 @@ All API responses follow a standardized format:
 - Python 3.11+
 - PostgreSQL 15+
 - Redis 7+
-- RabbitMQ 3.12+ (optional, for message queue)
+- RabbitMQ 3.12+ (for message queue)
 
 ### Local Development Setup
 
@@ -245,18 +245,6 @@ black --check core/ hngstage4/
 # isort
 isort --check-only core/ hngstage4/
 ```
-
-## CI/CD
-
-The project includes a GitHub Actions workflow that:
-
-- Runs tests on every push/PR
-- Performs linting and code quality checks
-- Runs security vulnerability scans
-- Builds Docker images
-- Deploys to production (on main branch)
-
-See `.github/workflows/ci-cd.yml` for details.
 
 ## Performance & Scalability
 
