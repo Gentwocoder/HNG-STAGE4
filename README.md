@@ -79,7 +79,7 @@ hngstage4/
 
 ### Monitoring
 
-- `GET /api/v1/users/health/` - Health check endpoint
+- `GET /health/` - Health check endpoint
 
 ## Response Format
 
@@ -274,7 +274,7 @@ docker-compose up --scale web=3
 ### Health Check
 
 ```bash
-curl http://localhost:8000/api/v1/users/health/
+curl http://localhost:8000/health/
 ```
 
 ### Logs
@@ -358,8 +358,8 @@ python manage.py spectacular --file schema.yml
 ```
 
 Or access interactive API docs at:
-- Swagger UI: `/api/docs/`
-- ReDoc: `/api/redoc/`
+- Swagger UI: `/api/docs/swagger`
+- ReDoc: `/api/docs/redoc/`
 
 ## Contributing
 
