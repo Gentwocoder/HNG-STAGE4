@@ -1,0 +1,36 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Python files
+*.py text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Environment files
+*.env text eol=lf
+.env* text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose*.yml text eol=lf
+
+# Make files
+Makefile text eol=lf
+
+# Ignore build artifacts
+*.pyc binary
+*.pyo binary
+*.db binary
+*.sqlite3 binary
+__pycache__/ binary
