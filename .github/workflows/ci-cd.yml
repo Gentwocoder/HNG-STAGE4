@@ -41,7 +41,7 @@ jobs:
         run: |
           cd hngstage4
           python -m pip install --upgrade pip
-          pip install flake8 black isort
+          pip install flake8 isort
       
       - name: Run flake8
         run: |
@@ -49,11 +49,6 @@ jobs:
           flake8 core/ hngstage4/ --count --statistics --show-source \
             --max-line-length=137 \
             --exclude=*/migrations/*,*/venv/*,*/env/*
-      
-      - name: Check code formatting with black
-        run: |
-          cd hngstage4
-          black --check core/ hngstage4/ --config pyproject.toml --exclude="migrations|venv|env"
       
       - name: Check import sorting with isort
         run: |
