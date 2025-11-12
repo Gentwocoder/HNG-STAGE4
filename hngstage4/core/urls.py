@@ -26,15 +26,15 @@ urlpatterns = [
     # Health check
     # path('health/', health_check, name='health-check'),
     # Authentication endpoints
-    path("register/", UserRegistrationView.as_view(), name="register"),
-    path("login/", UserLoginView.as_view(), name="login"),
-    path("logout/", UserLogoutView.as_view(), name="logout"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("/register", UserRegistrationView.as_view(), name="register"),
+    path("/login", UserLoginView.as_view(), name="login"),
+    path("/logout", UserLogoutView.as_view(), name="logout"),
+    path("/token/refresh", TokenRefreshView.as_view(), name="token-refresh"),
     # User profile endpoints
-    path("profile/", UserProfileView.as_view(), name="profile"),
-    path("change-password/", PasswordChangeView.as_view(), name="change-password"),
+    path("/profile", UserProfileView.as_view(), name="profile"),
+    path("/change-password", PasswordChangeView.as_view(), name="change-password"),
     # Notification preferences
-    path("preferences/", NotificationPreferencesView.as_view(), name="preferences"),
+    path("/preferences", NotificationPreferencesView.as_view(), name="preferences"),
     # Push tokens (using router)
     path("", include(router.urls)),
 ]
