@@ -1,0 +1,140 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Django specific
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static_root/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+coverage.xml
+*.cover
+.cache
+nosetests.xml
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Docker files (don't need these in the image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Development tools
+Makefile
+setup.sh
+pytest.ini
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Node modules (if any frontend dependencies)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Local database dumps
+*.sql
+*.dump
+
+# Editor config
+.editorconfig
+.flake8
+.pylintrc
+pyproject.toml
+setup.cfg
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Migration backups
+**/migrations/*.pyc
+
+# Schema files (generated)
+schema.yml
+
+# Test files
+**/tests/
+test_*.py
+*_test.py
+
+# API documentation files
+API_*.md
+ARCHITECTURE.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
+DEPLOYMENT.md
+CI-CD-REFERENCE.md
