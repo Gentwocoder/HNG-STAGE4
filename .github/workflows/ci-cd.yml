@@ -21,6 +21,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Normalize line endings
+        run: |
+          git config core.autocrlf false
+          git config core.eol lf
+          git rm --cached -r .
+          git reset --hard
       
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
