@@ -1,8 +1,9 @@
 """
 Test cases for User Service models
 """
-import pytest
 from django.contrib.auth import get_user_model
+
+import pytest
 
 from core.models import NotificationPreference, PushToken, UserProfile
 

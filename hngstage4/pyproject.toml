@@ -1,0 +1,39 @@
+[tool.black]
+line-length = 100
+target-version = ['py311']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | env
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.tox
+  | build
+  | dist
+  | migrations
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_glob = ["*/migrations/*", "*/venv/*", "*/env/*"]
+known_first_party = ["core", "hngstage4"]
+known_django = ["django"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.flake8]
+max-line-length = 137
+exclude = [
+    ".git",
+    "__pycache__",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "build",
+    "dist"
+]
+extend-ignore = ["E501", "W503"]
