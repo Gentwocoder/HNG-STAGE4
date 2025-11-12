@@ -18,7 +18,7 @@ from .views import (  # health_check,
 
 # Router for ViewSets
 router = DefaultRouter()
-router.register(r"push-tokens", PushTokenViewSet, basename="push-token")
+router.register(r"/push-tokens", PushTokenViewSet, basename="push-token")
 
 app_name = "core"
 
