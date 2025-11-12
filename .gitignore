@@ -177,3 +177,5 @@ PROJECT_SUMMARY.md
 QUICKSTART.md
 DEPLOYMENT.md
 CI-CD-REFERENCE.md
+
+docker-compose.yml
