@@ -44,12 +44,12 @@ jobs:
       - name: Check code formatting with black
         run: |
           cd hngstage4
-          black --check core/ hngstage4/ --line-length=100 --exclude="migrations|venv|env"
+          black --check core/ hngstage4/ --config pyproject.toml --exclude="migrations|venv|env"
       
       - name: Check import sorting with isort
         run: |
           cd hngstage4
-          isort --check-only core/ hngstage4/ --profile black --skip migrations --skip venv --skip env
+          isort --check-only core/ hngstage4/ --settings-path pyproject.toml --skip migrations --skip venv --skip env
 
   # ==================== Security Scanning ====================
   security:
