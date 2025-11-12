@@ -41,6 +41,8 @@ RUN python manage.py collectstatic --noinput || true
 
 RUN python manage.py migrate --noinput
 
+RUN python manage.py spectacular --file schema.yml
+
 # Add user's pip bin to PATH
 ENV PATH="/home/appuser/.local/bin:${PATH}"
 
