@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .cache_manager import CacheManager, RateLimiter
+from .message_queue import mq_manager
 from .models import NotificationPreference, PushToken, User
 from .response_utils import APIResponse, calculate_pagination_meta
 from .serializers import (
@@ -107,6 +108,11 @@ class UserRegistrationView(APIView):
                 )
 
             user = serializer.save()
+
+            # Publish user registration event to RabbitMQ
+            mq_manager.publish_user_registered(
+                user_id=str(user.user_id), email=user.email, username=user.username
+            )
 
             # Generate tokens
             refresh = RefreshToken.for_user(user)
@@ -248,7 +254,19 @@ class UserProfileView(APIView):
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
+            # Get changed fields before save
+            changed_fields = {}
+            for field, value in serializer.validated_data.items():
+                if getattr(user, field) != value:
+                    changed_fields[field] = value
+
             serializer.save()
+
+            # Publish user update event
+            if changed_fields:
+                mq_manager.publish_user_updated(
+                    user_id=str(user.user_id), updated_fields=changed_fields
+                )
 
             # Invalidate cache
             CacheManager.invalidate_user_cache(str(user.id))
@@ -340,6 +358,11 @@ class NotificationPreferencesView(APIView):
         if serializer.is_valid():
             serializer.save()
 
+            # Publish preferences update event
+            mq_manager.publish_preferences_updated(
+                user_id=str(user.user_id), preferences=serializer.data
+            )
+
             # Invalidate cache
             CacheManager.delete_user_preferences(str(user.id))
 
@@ -417,7 +440,14 @@ class PushTokenViewSet(viewsets.ModelViewSet):
                 )
 
             # Create new token
-            serializer.save(user=request.user)
+            token_instance = serializer.save(user=request.user)
+
+            # Publish push token added event
+            mq_manager.publish_push_token_added(
+                user_id=str(request.user.user_id),
+                token=token_instance.token,
+                device_type=token_instance.device_type,
+            )
 
             logger.info(f"Push token created for user: {request.user.email}")
 
@@ -463,7 +493,14 @@ class PushTokenViewSet(viewsets.ModelViewSet):
         """Delete push token"""
         try:
             token = self.get_queryset().get(pk=pk)
+            token_value = token.token  # Store before deletion
+
             token.delete()
+
+            # Publish push token removed event
+            mq_manager.publish_push_token_removed(
+                user_id=str(request.user.user_id), token=token_value
+            )
 
             logger.info(f"Push token deleted: {pk}")
 

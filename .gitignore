@@ -179,3 +179,5 @@ DEPLOYMENT.md
 CI-CD-REFERENCE.md
 
 docker-compose.yml
+
+RABBITMQ_INTEGRATION.md
