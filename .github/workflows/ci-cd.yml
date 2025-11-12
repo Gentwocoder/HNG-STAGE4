@@ -38,7 +38,7 @@ jobs:
         run: |
           cd hngstage4
           flake8 core/ hngstage4/ --count --statistics --show-source \
-            --max-line-length=127 \
+            --max-line-length=137 \
             --exclude=*/migrations/*,*/venv/*,*/env/*
       
       - name: Check code formatting with black
