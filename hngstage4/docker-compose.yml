@@ -1,3 +1,4 @@
+# filepath: /home/gentle/Documents/HNG-STAGE4/hngstage4/docker-compose.yml
 version: '3.8'
 
 services:
@@ -8,11 +9,11 @@ services:
     environment:
       POSTGRES_DB: user_service_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Changed to avoid conflict
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -29,7 +30,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "6380:6379"  # Changed to avoid conflict
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -65,11 +66,10 @@ services:
       dockerfile: Dockerfile
     container_name: user_service_web
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput --clear &&
              gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 --access-logfile - --error-logfile - hngstage4.wsgi:application"
     volumes:
-      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - logs_volume:/app/logs
@@ -78,7 +78,8 @@ services:
     env_file:
       - .env
     environment:
-      - DEBUG=False
+      - SECRET_KEY=xz3+z=%2jz154e3gm!s2^2bkdxuak#oc_#w0)k#gwj1lk&rtz9(
+      - DEBUG=${DEBUG:-False}
       - USE_POSTGRES=True
       - DB_NAME=user_service_db
       - DB_USER=postgres
@@ -97,7 +98,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/users/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -116,7 +117,6 @@ services:
       - media_volume:/app/media:ro
     ports:
       - "80:80"
-      - "443:443"
     depends_on:
       - web
     networks:

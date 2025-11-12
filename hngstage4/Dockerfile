@@ -14,15 +14,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     build-essential \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user early
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app/logs /app/staticfiles /app/media && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user for pip install
+USER appuser
+
 # Install Python dependencies
-COPY requirements.txt /app/
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+COPY --chown=appuser:appuser requirements.txt /app/
+RUN pip install --user --upgrade pip && \
+    pip install --user --no-cache-dir -r requirements.txt
 
 # Copy project
-COPY . /app/
+COPY --chown=appuser:appuser . /app/
 
 # Create logs directory
 RUN mkdir -p /app/logs
@@ -30,11 +39,10 @@ RUN mkdir -p /app/logs
 # Collect static files
 RUN python manage.py collectstatic --noinput || true
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+RUN python manage.py migrate --noinput
 
-USER appuser
+# Add user's pip bin to PATH
+ENV PATH="/home/appuser/.local/bin:${PATH}"
 
 # Expose port
 EXPOSE 8000
