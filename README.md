@@ -339,16 +339,6 @@ Redis is used for:
 - [ ] Setup log aggregation
 - [ ] Configure CORS properly
 
-### Server Deployment
-
-1. Request server using: `/request-server`
-2. SSH into server
-3. Clone repository
-4. Setup environment variables
-5. Run Docker Compose
-6. Configure reverse proxy (Nginx)
-7. Setup SSL certificates (Let's Encrypt)
-
 ## API Documentation
 
 Detailed API documentation can be generated using:
