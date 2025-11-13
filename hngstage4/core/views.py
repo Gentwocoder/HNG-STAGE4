@@ -112,7 +112,7 @@ class UserRegistrationView(APIView):
 
             # Publish user registration event to RabbitMQ
             mq_manager.publish_user_registered(
-                user_id=str(user.user_id), email=user.email, username=user.username
+                user_id=str(user.id), email=user.email, username=user.username
             )
 
             # Generate tokens
@@ -266,7 +266,7 @@ class UserProfileView(APIView):
             # Publish user update event
             if changed_fields:
                 mq_manager.publish_user_updated(
-                    user_id=str(user.user_id), updated_fields=changed_fields
+                    user_id=str(user.id), updated_fields=changed_fields
                 )
 
             # Invalidate cache
@@ -361,7 +361,7 @@ class NotificationPreferencesView(APIView):
 
             # Publish preferences update event
             mq_manager.publish_preferences_updated(
-                user_id=str(user.user_id), preferences=serializer.data
+                user_id=str(user.id), preferences=serializer.data
             )
 
             # Invalidate cache
@@ -445,7 +445,7 @@ class PushTokenViewSet(viewsets.ModelViewSet):
 
             # Publish push token added event
             mq_manager.publish_push_token_added(
-                user_id=str(request.user.user_id),
+                user_id=str(request.user.id),
                 token=token_instance.token,
                 device_type=token_instance.device_type,
             )
@@ -500,7 +500,7 @@ class PushTokenViewSet(viewsets.ModelViewSet):
 
             # Publish push token removed event
             mq_manager.publish_push_token_removed(
-                user_id=str(request.user.user_id), token=token_value
+                user_id=str(request.user.id), token=token_value
             )
 
             logger.info(f"Push token deleted: {pk}")
