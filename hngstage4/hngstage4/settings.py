@@ -200,6 +200,7 @@ SPECTACULAR_SETTINGS = {
     "SERVERS": [
         {"url": "http://localhost:8000", "description": "Development server"},
         {"url": "http://127.0.0.1:8000", "description": "Local server"},
+	{"url": "https://hng-stage4-nhq1.onrender.com", "description": "Prod server"}
     ],
     "TAGS": [
         {"name": "Authentication", "description": "User authentication endpoints"},
