@@ -181,3 +181,6 @@ CI-CD-REFERENCE.md
 docker-compose.yml
 
 RABBITMQ_INTEGRATION.md
+REGISTRATION_API.md
+
+test_registration.py

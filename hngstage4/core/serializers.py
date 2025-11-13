@@ -111,40 +111,26 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.push_tokens.filter(is_active=True).count()
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Serializer for user registration"""
+class UserPreferenceInputSerializer(serializers.Serializer):
+    """Simple serializer for user preferences during registration"""
 
+    email = serializers.BooleanField(default=True)
+    push = serializers.BooleanField(default=True)
+
+
+class UserRegistrationSerializer(serializers.Serializer):
+    """Serializer for user registration with simplified format"""
+
+    name = serializers.CharField(max_length=255, required=True)
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(
         write_only=True,
         required=True,
         validators=[validate_password],
         style={"input_type": "password"},
     )
-    password_confirm = serializers.CharField(
-        write_only=True, required=True, style={"input_type": "password"}
-    )
-
-    class Meta:
-        model = User
-        fields = [
-            "email",
-            "username",
-            "password",
-            "password_confirm",
-            "phone_number",
-            "first_name",
-            "last_name",
-        ]
-        extra_kwargs = {
-            "first_name": {"required": False},
-            "last_name": {"required": False},
-        }
-
-    def validate(self, attrs):
-        """Validate that passwords match"""
-        if attrs["password"] != attrs["password_confirm"]:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-        return attrs
+    push_token = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    preferences = UserPreferenceInputSerializer(required=True)
 
     def validate_email(self, value):
         """Ensure email is lowercase and unique"""
@@ -153,26 +139,46 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
-    def validate_username(self, value):
-        """Ensure username is unique"""
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A user with this username already exists.")
-        return value
-
     def create(self, validated_data):
-        """Create user with profile and notification preferences"""
-        validated_data.pop("password_confirm")
-        first_name = validated_data.pop("first_name", "")
-        last_name = validated_data.pop("last_name", "")
+        """Create user with profile, preferences and optional push token"""
+        # Extract preferences
+        preferences_data = validated_data.pop("preferences")
+        push_token = validated_data.pop("push_token", None)
+        name = validated_data.pop("name")
+
+        # Generate username from email
+        email = validated_data["email"]
+        username = email.split("@")[0]
+        base_username = username
+
+        # Ensure username is unique
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # Split name into first_name and last_name
+        name_parts = name.strip().split(maxsplit=1)
+        first_name = name_parts[0] if name_parts else ""
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
 
         # Create user
+        validated_data["username"] = username
         user = User.objects.create_user(**validated_data)
 
-        # Create profile
+        # Create profile with name
         UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name)
 
-        # Create default notification preferences
-        NotificationPreference.objects.create(user=user)
+        # Create notification preferences based on input
+        NotificationPreference.objects.create(
+            user=user,
+            email_enabled=preferences_data["email"],
+            push_enabled=preferences_data["push"],
+        )
+
+        # Create push token if provided
+        if push_token and push_token.strip():
+            PushToken.objects.create(user=user, token=push_token.strip(), platform="web")
 
         return user
 
